@@ -221,6 +221,10 @@
 #error "ERROR: Unknown machine!"
 #endif
 
+#ifdef CONFIG_KEXEC_HARDBOOT
+#include <asm/kexec.h>
+#endif
+
 /* Section: Vibrator */
 #if defined(CONFIG_VIBRATOR_LC898300)
 struct lc898300_vib_cmd lc898300_vib_cmd_data = {
@@ -734,7 +738,9 @@ static struct platform_device rdtags_device = {
 };
 #endif
 
-#define MSM_RAM_CONSOLE_SIZE    (128 * SZ_1K)
+#define MSM_RAM_CONSOLE_SIZE    (124 * SZ_1K)
+#define KEXEC_HB_PAGE_ADDR_SIZE (SZ_4K)
+
 #ifdef CONFIG_ANDROID_RAM_CONSOLE
 static struct platform_device ram_console_device = {
 	.name           = "ram_console",
@@ -765,7 +771,8 @@ static struct persistent_ram ram_console_pram = {
  */
 #define DEBUG_MEMORY_SIZE ((MSM_RAM_CONSOLE_SIZE) + \
 			   (CONFIG_RAMDUMP_TAGS_SIZE) + \
-			   (S1BOOT_RPM_AREA_SIZE))
+			   (S1BOOT_RPM_AREA_SIZE)
+			   (KEXEC_HB_PAGE_ADDR_SIZE)
 
 static void reserve_debug_memory(void)
 {
@@ -778,13 +785,14 @@ static void reserve_debug_memory(void)
 	ram_console_pram.size = MSM_RAM_CONSOLE_SIZE;
 	INIT_LIST_HEAD(&ram_console_pram.node);
 	ret = persistent_ram_early_init(&ram_console_pram);
-	if (ret) {
+h	if (ret) {
 		pr_err("Init of persistent RAM for ram_console failed: %d\n",
 			ret);
 	} else {
 		pr_info("ram_console memory reserved: %#x@%#08x\n",
 			(unsigned int)ram_console_pram.size,
 			(unsigned int)ram_console_pram.start);
+		memblock_remove(KEXEC_HB_PAGE_ADDR, KEXEC_HB_PAGE_ADDR_SIZE);
 		bank_end -= ram_console_pram.size;
 	}
 #endif
