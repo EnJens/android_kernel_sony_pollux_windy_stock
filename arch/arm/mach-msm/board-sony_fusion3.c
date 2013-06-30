@@ -771,8 +771,8 @@ static struct persistent_ram ram_console_pram = {
  */
 #define DEBUG_MEMORY_SIZE ((MSM_RAM_CONSOLE_SIZE) + \
 			   (CONFIG_RAMDUMP_TAGS_SIZE) + \
-			   (S1BOOT_RPM_AREA_SIZE)
-			   (KEXEC_HB_PAGE_ADDR_SIZE)
+			   (S1BOOT_RPM_AREA_SIZE) + \
+			   (KEXEC_HB_PAGE_ADDR_SIZE))
 
 static void reserve_debug_memory(void)
 {
@@ -785,7 +785,7 @@ static void reserve_debug_memory(void)
 	ram_console_pram.size = MSM_RAM_CONSOLE_SIZE;
 	INIT_LIST_HEAD(&ram_console_pram.node);
 	ret = persistent_ram_early_init(&ram_console_pram);
-h	if (ret) {
+	if (ret) {
 		pr_err("Init of persistent RAM for ram_console failed: %d\n",
 			ret);
 	} else {
